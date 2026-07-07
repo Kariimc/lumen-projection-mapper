@@ -1,0 +1,13 @@
+appId: app.lumen.desktop
+productName: Lumen
+files:
+  - src/**/*
+  - "!node_modules/.cache"
+extraResources:
+  - from: ../controller
+    to: controller
+win:
+  target: nsis
+  icon: assets/icon.ico
+nsis:
+  oneClick: true

@@ -1,0 +1,39 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Lumen Remote</title>
+<link rel="stylesheet" href="style.css">
+</head><body>
+  <div id="reconnect" class="overlay hidden">Reconnecting…</div>
+
+  <header>
+    <select id="surfacePick"></select>
+    <button id="addShape">+ Shape</button>
+    <button id="curtainBtn">Curtain</button>
+  </header>
+
+  <!-- The drag pad: a scaled-down mirror of the projector canvas -->
+  <div id="pad">
+    <svg id="quad" width="100%" height="100%"></svg>
+    <div class="dot" data-corner="0"></div>
+    <div class="dot" data-corner="1"></div>
+    <div class="dot" data-corner="2"></div>
+    <div class="dot" data-corner="3"></div>
+  </div>
+  <p class="hint">Drag each dot until the picture sits where you want it.</p>
+
+  <section id="mediaBar">
+    <label class="upBtn">＋<input id="fileIn" type="file"
+           accept="video/mp4,video/webm,image/*" hidden></label>
+    <div id="mediaList"></div>
+  </section>
+
+  <section id="sliders">
+    <label>See-through <input id="opacity" type="range" min="0" max="1" step="0.01"></label>
+    <label>Brightness <input id="brightness" type="range" min="0" max="2" step="0.01"></label>
+    <label><input id="gridChk" type="checkbox"> Alignment grid</label>
+  </section>
+
+  <script src="controller.js"></script>
+</body></html>

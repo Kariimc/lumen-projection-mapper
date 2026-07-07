@@ -1,0 +1,11 @@
+{
+  "name": "lumen-projection-mapper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Extremely simple cross-platform projection mapping: phone controls, projector output, no jargon.",
+  "workspaces": ["desktop"],
+  "scripts": {
+    "test": "node test/run-tests.js"
+  },
+  "license": "MIT"
+}
