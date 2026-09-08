@@ -51,6 +51,7 @@ function createState(saveDir) {
 
   /** Apply a phone message. Returns true if state changed. */
   function apply(m) {
+    if (!m || typeof m !== 'object' || Array.isArray(m)) return false;
     let changed = false;
     switch (m.type) {
       case 'corner.move': {

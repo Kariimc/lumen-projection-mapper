@@ -5,7 +5,7 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
-    "test": "node ../test/run-tests.js",
+    "test": "node ../test/run-tests.js && node ../test/security-tests.js && node ../test/server-security-tests.js",
     "dist": "electron-builder --win"
   },
   "dependencies": {
@@ -13,6 +13,6 @@
     "ws": "^8.21.0"
   },
   "devDependencies": {
-    "electron": "^33.4.11"
+    "electron": "^42.11.2"
   }
 }
