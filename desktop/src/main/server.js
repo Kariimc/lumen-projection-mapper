@@ -47,11 +47,11 @@ function getLanIp() {
  * @param {string} mediaDir - absolute path where uploads live
  * @param {function} onChange - called after any state mutation (main uses it
  *                              to refresh the output window and broadcast)
- * @param {object} [opts]   - { httpPort, wsPort, controllerDir } overrides for testing
+ * @param {object} [opts]   - { httpPort, wsPort, controllerDir, host } overrides for testing
  */
 function startServers(state, mediaDir, onChange, opts = {}) {
-  const httpPort = opts.httpPort || HTTP_PORT;
-  const wsPort = opts.wsPort || WS_PORT;
+  const httpPort = opts.httpPort ?? HTTP_PORT;
+  const wsPort = opts.wsPort ?? WS_PORT;
   const controllerDir = opts.controllerDir || CONTROLLER_DIR;
 
   // ---------- HTTP: controller page, media files, uploads ----------
@@ -65,14 +65,15 @@ function startServers(state, mediaDir, onChange, opts = {}) {
     }
     // everything else: serve the controller SPA
     const rel = req.url === '/' ? 'index.html' : req.url.slice(1).split('?')[0];
-    const file = path.normalize(path.join(controllerDir, rel));
-    if (!file.startsWith(controllerDir)) { res.writeHead(403); return res.end(); }
+    const file = path.resolve(controllerDir, rel);
+    const relative = path.relative(path.resolve(controllerDir), file);
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) { res.writeHead(403); return res.end(); }
     streamFile(file, req, res);
   });
-  httpServer.listen(httpPort);
+  httpServer.listen(httpPort, opts.host);
 
   // ---------- WebSocket: realtime control ----------
-  const wss = new WebSocketServer({ port: wsPort });
+  const wss = new WebSocketServer({ port: wsPort, host: opts.host });
   const broadcast = (obj) => {
     const msg = JSON.stringify(obj);
     for (const c of wss.clients) if (c.readyState === 1) c.send(msg);
@@ -108,15 +109,23 @@ function streamFile(file, req, res) {
     // Range support so <video> can seek
     const range = req.headers.range;
     if (range) {
-      const [s, e] = range.replace('bytes=', '').split('-');
-      const start = parseInt(s, 10), end = e ? parseInt(e, 10) : st.size - 1;
+      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+      let start, end;
+      if (match && (match[1] || match[2])) {
+        start = match[1] ? Number(match[1]) : Math.max(0, st.size - Number(match[2]));
+        end = match[1] && match[2] ? Math.min(Number(match[2]), st.size - 1) : st.size - 1;
+      }
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start > end || start >= st.size) {
+        res.writeHead(416, { 'Content-Range': `bytes */${st.size}` });
+        return res.end();
+      }
       res.writeHead(206, { 'Content-Type': type, 'Accept-Ranges': 'bytes',
         'Content-Range': `bytes ${start}-${end}/${st.size}`,
         'Content-Length': end - start + 1 });
-      fs.createReadStream(file, { start, end }).pipe(res);
+      fs.createReadStream(file, { start, end }).on('error', error => res.destroy(error)).pipe(res);
     } else {
       res.writeHead(200, { 'Content-Type': type, 'Content-Length': st.size });
-      fs.createReadStream(file).pipe(res);
+      fs.createReadStream(file).on('error', error => res.destroy(error)).pipe(res);
     }
   });
 }

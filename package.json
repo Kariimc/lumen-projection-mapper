@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "Extremely simple cross-platform projection mapping: phone controls, projector output, no jargon.",
-  "workspaces": ["desktop"],
+  "workspaces": [
+    "desktop"
+  ],
   "scripts": {
-    "test": "node test/run-tests.js"
+    "test": "node test/run-tests.js && node test/security-tests.js && node test/server-security-tests.js"
   },
   "license": "MIT"
 }

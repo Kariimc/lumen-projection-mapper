@@ -11,9 +11,8 @@ just reading it).
 ## Quick start (developer)
 
 ```bash
-cd desktop
-npm install
-npm start
+npm ci
+npm start --workspace desktop
 ```
 
 A control window opens showing a pairing QR code. Plug a projector or any
@@ -29,7 +28,8 @@ No second monitor to test with? Set `LUMEN_FORCE_PRIMARY_DISPLAY=1` before
 npm test
 ```
 
-This runs `test/run-tests.js` — 8 fast, Electron-free checks covering the
+This runs eight fast state/math checks plus the real archive-extractor and
+isolated HTTP/WebSocket security regressions. The state tests cover the
 state machine (duplicate-ID prevention, persistence, input validation, value
 clamping) and the corner-pinning math itself (including the real division
 bug this project shipped with once already — see `wargames/RESULTS.md`).
@@ -37,13 +37,22 @@ bug this project shipped with once already — see `wargames/RESULTS.md`).
 ## Build the Windows installer
 
 ```bash
-cd desktop
-npm run dist
+npm ci
+npm run dist --workspace desktop -- --config.win.signExecutable=false
 ```
 
-Output: `desktop/dist/Lumen Setup 0.1.0.exe`. Windows Firewall will prompt on
-first run of the installed app — the user must click **Allow**, or the phone
-won't be able to reach it.
+Output: `desktop/dist/Lumen Setup 0.1.0.exe`. This command produces an unsigned
+local installer; it does not publish anything. The build pins its Electron
+runtime and includes the phone controller under `resources/controller`.
+After packaging, `postdist` checks the ASAR contents and controller bytes and
+runs an isolated loopback check through the packaged executable. Repeat those
+checks with `npm run test:package --workspace desktop` after a build.
+
+Windows may ask for firewall access when the installed app first starts.
+Allow access on a trusted private network for the phone remote. Unsigned
+installers may also show Windows reputation warnings; this build is not a
+signed store release. Physical projector and phone testing remain separate
+from the automated package checks.
 
 ## Project layout
 
